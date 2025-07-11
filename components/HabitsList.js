@@ -7,10 +7,10 @@ import {
   Alert,
 } from "react-native";
 import WeekdayPicker from "./WeekdayPicker";
-import { styles } from "../App";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { useState } from "react";
-import { Tile } from "../App";
+import Tile from "./Tile";
+import { styles } from "./styles";
 
 function HabitsList({ habits, onHabitRemove, onHabitAdd, onSnackBarVisible }) {
   const [habitsAddFormVisible, setHabitsAddFormVisible] = useState(false);

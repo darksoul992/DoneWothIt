@@ -1,62 +1,45 @@
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import MainView from "./components/MainView";
+import Stats from "./components/Stats";
+import { NavigationContainer } from "@react-navigation/native";
+import Icon from "@react-native-vector-icons/ionicons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useState } from "react";
-import {
-  Dimensions,
-  StyleSheet,
-  Text,
-  View,
-  SafeAreaView,
-  Image,
-  TouchableWithoutFeedback,
-  TouchableOpacity,
-  TouchableHighlight,
-  TouchableNativeFeedback,
-  Button,
-  Alert,
-  Platform,
-  StatusBar,
-  ScrollView,
-  FlatList,
-  TextInput,
-  KeyboardAvoidingView,
-} from "react-native";
-import { useDeviceOrientation } from "@react-native-community/hooks";
-import Icon from "react-native-vector-icons/MaterialIcons";
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+const Tab = createBottomTabNavigator();
+import Calendar from "./Calendar";
 
-import ToDo from "./components/ToDo";
-import HabitsList from "./components/HabitsList";
-import { getRandomQuote } from "./assets/motivationalQuotes";
-import Toast from "react-native-toast-message";
+const saveInStorage = async (key, toSave) => {
+  try {
+    const habitsJSON = JSON.stringify(toSave);
+    await AsyncStorage.setItem(key, habitsJSON);
+  } catch (e) {
+    console.error("Błąd zapisu", e);
+  }
+};
+const loadFromStorage = async (key) => {
+  try {
+    const habitsJSON = await AsyncStorage.getItem(key);
+    return habitsJSON != null ? JSON.parse(habitsJSON) : [];
+  } catch (e) {
+    console.error("Błąd odczytu", e);
+    return [];
+  }
+};
 
-function MotivationalQuote({ quote }) {
-  return (
-    <View style={styles.quoteContainer}>
-      <Text style={{ color: "#ebebeb", fontSize: 20, textAlign: "center" }}>
-        {quote}
-      </Text>
-    </View>
-  );
-}
 export default function App() {
-  const [pressed, setPressed] = useState(false);
   const [habits, setHabits] = useState([
-    { id: 1, content: "Czytać 10 stron dziennie", weekdays: [1, 3, 5] },
-    { id: 2, content: "Chodzić spać o 22:00", weekdays: [0, 3] },
-    {
-      id: 3,
-      content: "Uczyć się języka przez 30 minut dziennie",
-      weekdays: [6],
-    },
+    // { id: 1, content: "Czytać 10 stron dziennie", weekdays: [1, 3, 5] },
+    // { id: 2, content: "Chodzić spać o 22:00", weekdays: [0, 3] },
+    // {
+    //   id: 3,
+    //   content: "Uczyć się języka przez 30 minut dziennie",
+    //   weekdays: [6],
+    // },
   ]);
   const [toDoToday, setToDoToday] = useState([]);
-  const [snackbarVisible, setSnackbarVisible] = useState({
-    visible: false,
-    text: "",
-  });
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [tasksDone, setTasksDone] = useState({ tasks: [], date: null });
 
-  const handleSnackbarVisible = (text) => {
-    setSnackbarVisible({ visible: true, text: text });
-  };
   useEffect(() => {
     const today = new Date();
     let todaysWeekday = today.getDay();
@@ -70,135 +53,89 @@ export default function App() {
     setToDoToday(todaysTasks);
   }, [habits]);
 
-  const handleHabitRemove = (habit) => {
-    Alert.alert(
-      "Uwaga",
-      "Czy na pewno chcesz usunąć? Nie będzie można tego cofnąć.",
-      [
-        {
-          text: "Nie",
-          onPress: () => {
-            return;
-          },
-        },
-        {
-          text: "Tak",
-          onPress: () => {
-            setHabits((prev) => prev.filter((hab) => hab.id !== habit));
-          },
-        },
-      ]
+  useEffect(() => {
+    if (isLoaded) saveInStorage("@habits", habits);
+  }, [habits]);
+
+  useEffect(() => {
+    const fetchHabits = async () => {
+      const habitsFromStorage = await loadFromStorage("@habits");
+      if (habitsFromStorage) {
+        setHabits(habitsFromStorage);
+        setIsLoaded(true);
+      }
+    };
+
+    const fetchTasksDone = async () => {
+      const tasksDoneFromStorage = await loadFromStorage("@tasksDone");
+      console.log(tasksDoneFromStorage);
+      if (tasksDoneFromStorage) {
+        if (!isSameDay(new Date(tasksDoneFromStorage.date), new Date())) {
+          setTasksDone({ tasks: [], date: null });
+          return;
+        }
+        setTasksDone(tasksDoneFromStorage);
+      }
+    };
+    fetchHabits();
+    fetchTasksDone();
+  }, []);
+
+  function isSameDay(date1, date2) {
+    return (
+      date1.getFullYear() === date2.getFullYear() &&
+      date1.getMonth() === date2.getMonth() &&
+      date1.getDate() === date2.getDate()
     );
-  };
-  const handleHabitAdd = (habit, weekdays) => {
-    let maxIdNumber = 0;
-    habits.forEach((habit) => {
-      if (habit.id > maxIdNumber) maxIdNumber = habit.id;
-    });
-    setHabits((prev) => [
-      ...prev,
-      { id: maxIdNumber + 1, content: habit, weekdays: weekdays },
-    ]);
-    Toast.show({
-      type: "success",
-      text1: "Sukces",
-      text1Style: { color: "#000000" },
-      text2: "Powodzenia w trzymaniu nawyku",
-      text2Style: { color: "#000000" },
-      position: "bottom",
-    });
+  }
+
+  const handleTaskDone = async (id) => {
+    const newTasksDone = [...tasksDone.tasks, id];
+    const newObj = { tasks: newTasksDone, date: new Date() };
+    setTasksDone(newObj);
+    await saveInStorage("@tasksDone", newObj);
   };
   return (
-    <KeyboardAwareScrollView
-      style={{ flex: 1, backgroundColor: "#4f4f4f" }}
-      enableOnAndroid
-      extraScrollHeight={80}
-      keyboardShouldPersistTaps="handled"
-      contentContainerStyle={styles.container}
-    >
-      <View style={styles.topbar}>
-        <Text style={{ color: "#ebebeb", fontSize: 20 }}>MyHabits</Text>
-        <TouchableOpacity>
-          <Icon name="login" color="#ebebeb" size={36}></Icon>
-        </TouchableOpacity>
-      </View>
-      <View style={styles.mainContainer}>
-        <MotivationalQuote quote={getRandomQuote()} />
-        <ToDo toDoToday={toDoToday} />
-        <HabitsList
-          habits={habits}
-          onHabitRemove={handleHabitRemove}
-          onHabitAdd={handleHabitAdd}
-          onSnackBarVisible={handleSnackbarVisible}
-        />
-      </View>
+    <NavigationContainer>
+      <Tab.Navigator
+        screenOptions={({ route }) => ({
+          headerShown: false,
+          tabBarIcon: ({ focused, color, size }) => {
+            let iconName;
 
-      <Toast />
-    </KeyboardAwareScrollView>
+            if (route.name === "Start") {
+              iconName = focused ? "home" : "home-outline";
+            } else if (route.name === "Statystyki") {
+              iconName = focused ? "stats-chart" : "stats-chart-outline";
+            } else if (route.name === "Kalendarz") {
+              iconName = focused ? "calendar" : "calendar-outline";
+            }
+            return <Icon name={iconName} size={size} color={color}></Icon>;
+          },
+          tabBarActiveTintColor: "#fff",
+          tabBarInactiveTintColor: "#ccc",
+          tabBarStyle: {
+            backgroundColor: "#2f2f2f",
+            paddingBottom: 6,
+            paddingTop: 6,
+            height: 60,
+          },
+        })}
+      >
+        <Tab.Screen name="Start">
+          {() => (
+            <MainView
+              habits={habits}
+              onHabitsSet={setHabits}
+              toDoToday={toDoToday}
+              onTaskDone={handleTaskDone}
+              tasksDone={tasksDone}
+            />
+          )}
+        </Tab.Screen>
+        <Tab.Screen name="Statystyki" component={Stats} />
+        <Tab.Screen name="Kalendarz" component={Calendar} />
+      </Tab.Navigator>
+    </NavigationContainer>
   );
 }
-export function Tile({ children, title, contentStyles = {} }) {
-  return (
-    <View style={{ ...styles.habitsContainer, flexDirection: "column" }}>
-      <View style={styles.tileTitle}>
-        <Text style={styles.titleTileText}>{title}</Text>
-      </View>
-      <View style={{ ...contentStyles }}>{children}</View>
-    </View>
-  );
-}
-
-export const styles = StyleSheet.create({
-  container: {
-    flexDirection: "column",
-    justifyContent: "center",
-    backgroundColor: "#4f4f4f",
-    paddingTop: StatusBar.currentHeight,
-  },
-  topbar: {
-    backgroundColor: "#2f2f2f",
-    padding: 20,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    flex: 1,
-  },
-  icon: {
-    width: 40,
-    height: 40,
-  },
-  mainContainer: {
-    backgroundColor: "#4f4f4f",
-    flex: 15,
-  },
-  tileTitle: {
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#2f2f2f",
-    padding: 10,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-  },
-  titleTileText: {
-    fontSize: 20,
-    color: "#ebebeb",
-  },
-  listElement: {
-    backgroundColor: "#7f7f7f",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    borderRadius: 10,
-    margin: 10,
-  },
-  habitsContainer: {
-    margin: 15,
-    backgroundColor: "#3f3f3f",
-    borderRadius: 20,
-  },
-  quoteContainer: {
-    padding: 20,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-});

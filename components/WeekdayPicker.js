@@ -1,4 +1,5 @@
 import { View, TouchableOpacity, Text } from "react-native";
+import { styles } from "./styles";
 export default function WeekdayPicker({ onWeekdaySelect, selectedWeekdays }) {
   const weekDays = ["PON", "WT", "ŚR", "CZW", "PT", "SO", "ND"];
 

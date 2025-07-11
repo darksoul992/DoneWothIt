@@ -1,11 +1,14 @@
 import { View, TouchableOpacity, Text } from "react-native";
-import { styles } from "../App";
 import Icon from "react-native-vector-icons/MaterialIcons";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { styles } from "./styles";
 
-function Task({ item }) {
+function Task({ item, onTaskDone, isDone }) {
   const [done, setDone] = useState(false);
 
+  useEffect(() => {
+    setDone(isDone);
+  }, []);
   return (
     <View
       style={{
@@ -42,7 +45,10 @@ function Task({ item }) {
           borderTopRightRadius: 10,
           borderBottomRightRadius: 10,
         }}
-        onPress={() => setDone(true)}
+        onPress={() => {
+          setDone(true);
+          onTaskDone(item.id);
+        }}
       >
         <Text>
           <Icon
