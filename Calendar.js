@@ -1,12 +1,13 @@
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import { Text, View } from "react-native";
+import { Text, View, TouchableOpacity } from "react-native";
 import { styles } from "./components/styles";
 import { StyleSheet } from "react-native";
 import { FlatList, GestureHandlerRootView } from "react-native-gesture-handler";
 import { useEffect, useState } from "react";
 import { StatusBar } from "react-native";
+import Icon from "react-native-vector-icons/MaterialIcons";
 
-function Calendar() {
+function Calendar({ toHighlight }) {
   return (
     // <KeyboardAwareScrollView contentContainerStyle={styles.container}>
     //   <Text>Tu będzie kalendarz</Text>
@@ -14,12 +15,19 @@ function Calendar() {
     // </KeyboardAwareScrollView>
     <GestureHandlerRootView>
       <View style={{ flex: 1, ...styles.container }}>
-        <CustomCalendar />
+        <View style={styles.topbar}>
+          <Text style={{ color: "#ebebeb", fontSize: 20 }}>MyHabits</Text>
+          <TouchableOpacity>
+            <Icon name="login" color="#ebebeb" size={36}></Icon>
+          </TouchableOpacity>
+        </View>
+        <CustomCalendar toHighlight={toHighlight} />
       </View>
     </GestureHandlerRootView>
   );
 }
-function CustomCalendar() {
+function CustomCalendar({ toHighlight }) {
+  print(toHighlight);
   const calendarStyles = StyleSheet.create({
     container: {
       backgroundColor: "#4f4f4f",
@@ -28,14 +36,24 @@ function CustomCalendar() {
       flex: 1,
       borderRadius: 25,
       margin: 5,
-      backgroundColor: "#4f4f4f",
+      backgroundColor: "#353535ff",
       aspectRatio: 1,
       alignItems: "center",
       justifyContent: "center",
+      boxShadow: "0px 1px 2px 0.05px #87878794",
     },
     dayText: { color: "#ebebeb", fontSize: 25, padding: 3 },
+    monthName: {
+      paddingVertical: 10,
+      paddingHorizontal: 5,
+      fontSize: 30,
+      textTransform: "uppercase",
+      color: "#ebebeb",
+      fontWeight: 600,
+      textAlign: "center",
+    },
   });
-  const [monthName, setMonthName] = useState("");
+  const month = new Date().toLocaleString("default", { month: "long" });
   const [days, setDays] = useState([]);
   const dayNames = ["PON", "WTO", "ŚRO", "CZW", "PIĄ", "SOB", "NIE"];
   useEffect(() => {
@@ -68,7 +86,8 @@ function CustomCalendar() {
   }, []);
   return (
     days.length > 0 && (
-      <View style={{ backgroundColor: "#2f2f2f", flex: 1 }}>
+      <View style={{ backgroundColor: "#4f4f4f", flex: 1 }}>
+        <Text style={calendarStyles.monthName}>{month}</Text>
         <View
           style={{
             flexDirection: "row",
@@ -77,15 +96,25 @@ function CustomCalendar() {
           }}
         >
           {dayNames.map((name, index) => (
-            <View style={{ ...calendarStyles.day, backgroundColor: "#3f3f3f" }}>
-              <Text key={index}>{name}</Text>
+            <View
+              key={index}
+              style={{ ...calendarStyles.day, backgroundColor: "#454545ff" }}
+            >
+              <Text>{name}</Text>
             </View>
           ))}
         </View>
         <FlatList
           data={days}
           renderItem={({ item }) => (
-            <View style={calendarStyles.day}>
+            <View
+              style={{
+                ...calendarStyles.day,
+                backgroundColor: toHighlight.days.includes(item)
+                  ? toHighlight.color
+                  : "#353535ff",
+              }}
+            >
               <Text style={calendarStyles.dayText}>{item}</Text>
             </View>
           )}

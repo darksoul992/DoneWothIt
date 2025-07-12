@@ -14,7 +14,6 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    flex: 1,
   },
   icon: {
     width: 40,

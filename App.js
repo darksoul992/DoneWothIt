@@ -7,6 +7,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useState } from "react";
 const Tab = createBottomTabNavigator();
 import Calendar from "./Calendar";
+import Notes from "./components/Notes";
 
 const saveInStorage = async (key, toSave) => {
   try {
@@ -39,6 +40,10 @@ export default function App() {
   const [toDoToday, setToDoToday] = useState([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const [tasksDone, setTasksDone] = useState({ tasks: [], date: null });
+  const [perfectDays, setPerfectDays] = useState({
+    month: "202507",
+    days: [1, 2, 3, 4, 5, 9, 10, 11],
+  });
 
   useEffect(() => {
     const today = new Date();
@@ -109,6 +114,8 @@ export default function App() {
               iconName = focused ? "stats-chart" : "stats-chart-outline";
             } else if (route.name === "Kalendarz") {
               iconName = focused ? "calendar" : "calendar-outline";
+            } else if (route.name === "Notatki") {
+              iconName = focused ? "pencil" : "pencil-outline";
             }
             return <Icon name={iconName} size={size} color={color}></Icon>;
           },
@@ -134,7 +141,14 @@ export default function App() {
           )}
         </Tab.Screen>
         <Tab.Screen name="Statystyki" component={Stats} />
-        <Tab.Screen name="Kalendarz" component={Calendar} />
+        <Tab.Screen name="Kalendarz">
+          {() => (
+            <Calendar
+              toHighlight={{ days: perfectDays.days, color: "orange" }}
+            />
+          )}
+        </Tab.Screen>
+        <Tab.Screen name="Notatki" component={Notes} />
       </Tab.Navigator>
     </NavigationContainer>
   );
