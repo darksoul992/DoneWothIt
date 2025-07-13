@@ -9,7 +9,7 @@ import {
 } from "react-native-gesture-handler";
 import { useRef, useState } from "react";
 
-export default function Notes() {
+export default function Notes({ tasks, notes }) {
   const [dropdownSelectVisible, setDropdownSelectVisible] = useState(true);
   const [noteEntryVisible, setNoteEntryVisible] = useState(false);
 
@@ -56,21 +56,17 @@ export default function Notes() {
             flexWrap: "wrap",
           }}
         >
-          <Note
-            title="Notatka 1"
-            text="fwefwefwefwefwef"
-            date={new Date().toDateString()}
-          />
-          <Note
-            title="Notatka 1"
-            text="fwefwefwefwefwef"
-            date={new Date().toDateString()}
-          />
-          <Note
-            title="Notatka 1"
-            text="fwefwefwefwefwef"
-            date={new Date().toDateString()}
-          />
+          {notes.map((note) => {
+            console.log(note);
+            return (
+              <Note
+                title={note.title}
+                text={note.content}
+                date={note.date.toLocaleString()}
+              />
+            );
+          })}
+
           {noteEntryVisible && <NoteEntry />}
         </View>
         <View
@@ -94,7 +90,7 @@ export default function Notes() {
         {dropdownSelectVisible && (
           <SelectDropdown
             onDropdownHide={hideMenu}
-            options={["Zadanie 1", "Zadanie 2"]}
+            options={tasks}
             opacity={dropdownOpacity}
             translateY={translateY}
           />
@@ -148,7 +144,7 @@ function SelectDropdown({
   const selectWindowStyles = StyleSheet.create({
     container: {
       width: "50%",
-      height: "auto",
+      maxHeight: 250,
       backgroundColor: "#ebebeb",
       position: "absolute",
       top: "50%",
@@ -167,7 +163,7 @@ function SelectDropdown({
     },
   });
   return (
-    <Animated.View
+    <Animated.ScrollView
       style={{
         ...selectWindowStyles.container,
         dropdownOpacity,
@@ -184,7 +180,7 @@ function SelectDropdown({
           <Text>{option}</Text>
         </TouchableOpacity>
       ))}
-    </Animated.View>
+    </Animated.ScrollView>
   );
 }
 function NoteEntry() {

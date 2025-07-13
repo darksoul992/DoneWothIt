@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 const Tab = createBottomTabNavigator();
 import Calendar from "./Calendar";
 import Notes from "./components/Notes";
+import { Title } from "react-native-paper";
 
 const saveInStorage = async (key, toSave) => {
   try {
@@ -44,6 +45,15 @@ export default function App() {
     month: "202507",
     days: [1, 2, 3, 4, 5, 9, 10, 11],
   });
+  const [notes, setNotes] = useState([
+    {
+      id: 1,
+      taskID: 2,
+      title: "Pompki",
+      content: "Zrobić 10 pompek każdego dnia. Dzień 1 - nie udało się",
+      date: new Date(),
+    },
+  ]);
 
   useEffect(() => {
     const today = new Date();
@@ -73,7 +83,6 @@ export default function App() {
 
     const fetchTasksDone = async () => {
       const tasksDoneFromStorage = await loadFromStorage("@tasksDone");
-      console.log(tasksDoneFromStorage);
       if (tasksDoneFromStorage) {
         if (!isSameDay(new Date(tasksDoneFromStorage.date), new Date())) {
           setTasksDone({ tasks: [], date: null });
@@ -95,6 +104,7 @@ export default function App() {
   }
 
   const handleTaskDone = async (id) => {
+    if (tasksDone.tasks.includes(id)) return;
     const newTasksDone = [...tasksDone.tasks, id];
     const newObj = { tasks: newTasksDone, date: new Date() };
     setTasksDone(newObj);
@@ -148,7 +158,11 @@ export default function App() {
             />
           )}
         </Tab.Screen>
-        <Tab.Screen name="Notatki" component={Notes} />
+        <Tab.Screen name="Notatki">
+          {() => (
+            <Notes tasks={habits.map((habit) => habit.content)} notes={notes} />
+          )}
+        </Tab.Screen>
       </Tab.Navigator>
     </NavigationContainer>
   );
