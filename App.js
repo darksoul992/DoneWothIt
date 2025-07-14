@@ -48,7 +48,7 @@ export default function App() {
   const [notes, setNotes] = useState([
     {
       id: 1,
-      taskID: 2,
+      habitID: 2,
       title: "Pompki",
       content: "Zrobić 10 pompek każdego dnia. Dzień 1 - nie udało się",
       date: new Date(),
@@ -160,7 +160,13 @@ export default function App() {
         </Tab.Screen>
         <Tab.Screen name="Notatki">
           {() => (
-            <Notes tasks={habits.map((habit) => habit.content)} notes={notes} />
+            <Notes
+              tasks={habits.map((habit) => ({
+                id: habit.id,
+                content: habit.content,
+              }))}
+              notes={notes}
+            />
           )}
         </Tab.Screen>
       </Tab.Navigator>

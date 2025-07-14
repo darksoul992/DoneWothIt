@@ -8,10 +8,16 @@ import {
   GestureHandlerRootView,
 } from "react-native-gesture-handler";
 import { useRef, useState } from "react";
+import Note from "./Note";
+import TimePicker from "./TimePicker";
 
 export default function Notes({ tasks, notes }) {
   const [dropdownSelectVisible, setDropdownSelectVisible] = useState(true);
   const [noteEntryVisible, setNoteEntryVisible] = useState(false);
+  const [currentHabitIDFilter, setCurrentHabitIDFilter] = useState(null);
+  const [currentHabitNoteAdd, setCurrentHabitNoteAdd] = useState(null);
+  const [habitSelectNoteAddVisible, setHabitSelectNoteAddVisible] =
+    useState(false);
 
   const dropdownOpacity = useRef(new Animated.Value(1)).current;
   const translateY = useRef(new Animated.Value(0)).current;
@@ -33,6 +39,9 @@ export default function Notes({ tasks, notes }) {
     });
   };
 
+  const handleChangeHabitFilter = (id) => {
+    setCurrentHabitIDFilter(id);
+  };
   return (
     <GestureHandlerRootView>
       <KeyboardAwareScrollView
@@ -56,16 +65,29 @@ export default function Notes({ tasks, notes }) {
             flexWrap: "wrap",
           }}
         >
-          {notes.map((note) => {
-            console.log(note);
-            return (
-              <Note
-                title={note.title}
-                text={note.content}
-                date={note.date.toLocaleString()}
-              />
-            );
-          })}
+          {currentHabitIDFilter === null
+            ? notes.map((note) => {
+                return (
+                  <Note
+                    key={note.id}
+                    title={note.title}
+                    text={note.content}
+                    date={note.date.toLocaleString()}
+                    noteStyle={noteStyle}
+                  />
+                );
+              })
+            : notes
+                .filter((note) => note.habitID === currentHabitIDFilter)
+                .map((note) => (
+                  <Note
+                    key={note.id}
+                    title={note.title}
+                    text={note.content}
+                    date={note.date.toLocaleString()}
+                    noteStyle={noteStyle}
+                  />
+                ))}
 
           {noteEntryVisible && <NoteEntry />}
         </View>
@@ -93,8 +115,18 @@ export default function Notes({ tasks, notes }) {
             options={tasks}
             opacity={dropdownOpacity}
             translateY={translateY}
+            onSelect={handleChangeHabitFilter}
           />
         )}
+        {habitSelectNoteAddVisible && (
+          <SelectDropdown>
+            onDropdownHide={hideMenu}
+            options={tasks}
+            opacity={dropdownOpacity}
+            translateY={translateY}
+          </SelectDropdown>
+        )}
+        <TimePicker />
       </KeyboardAwareScrollView>
     </GestureHandlerRootView>
   );
@@ -140,6 +172,7 @@ function SelectDropdown({
   onDropdownHide,
   dropdownOpacity,
   translateY,
+  onSelect,
 }) {
   const selectWindowStyles = StyleSheet.create({
     container: {
@@ -176,8 +209,12 @@ function SelectDropdown({
         </TouchableOpacity>
       </View>
       {options.map((option, index) => (
-        <TouchableOpacity key={index} style={selectWindowStyles.selectElement}>
-          <Text>{option}</Text>
+        <TouchableOpacity
+          key={index}
+          style={selectWindowStyles.selectElement}
+          onPress={() => onSelect(option.id)}
+        >
+          <Text>{option.content}</Text>
         </TouchableOpacity>
       ))}
     </Animated.ScrollView>
@@ -188,32 +225,43 @@ function NoteEntry() {
     <View style={noteStyle.note}>
       <View style={{ ...noteStyle.title, padding: 0 }}>
         <TextInput
-          style={{ backgroundColor: "#4f4f4f", width: "100%" }}
+          style={{
+            backgroundColor: "#2f2f2f",
+            paddingHorizontal: 5,
+            color: "#ebebeb",
+            width: "100%",
+            height: "100%",
+            borderTopLeftRadius: 20,
+            borderTopRightRadius: 20,
+          }}
           placeholder="Tytuł"
         ></TextInput>
       </View>
-      <View style={noteStyle.content}>
-        <TextInput placeholder="Treść"></TextInput>
+      <View style={{ ...noteStyle.content, padding: 0 }}>
+        <TextInput
+          placeholder="Treść"
+          style={{
+            width: "100%",
+            height: "100%",
+            backgroundColor: "#3f3f3f",
+            color: "#ebebeb",
+          }}
+        ></TextInput>
       </View>
-      <View style={noteStyle.footer}>
-        <TextInput placeholder="fws"></TextInput>
-      </View>
-    </View>
-  );
-}
-function Note({ title, text, date }) {
-  return (
-    <View style={noteStyle.note}>
-      <View style={noteStyle.title}>
-        <Text style={noteStyle.textLight} adjustsFontSizeToFit={true}>
-          {title}
-        </Text>
-      </View>
-      <View style={noteStyle.content}>
-        <Text>{text}</Text>
-      </View>
-      <View style={noteStyle.footer}>
-        <Text style={noteStyle.textLight}>{date}</Text>
+      <View style={{ ...noteStyle.footer, paddingHorizontal: 0 }}>
+        <TouchableOpacity
+          style={{
+            width: "100%",
+            height: "100%",
+            backgroundColor: "#2f2f2f",
+            borderBottomLeftRadius: 20,
+            borderBottomRightRadius: 20,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <Text style={noteStyle.textLight}>Wybierz nawyk</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
