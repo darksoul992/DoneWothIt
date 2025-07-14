@@ -11,6 +11,7 @@ function TimePicker() {
   const [numberElementHeight, setNumberElementHeight] = useState(null)
   const [hoursIndex, setHoursIndex] = useState(0);
   const [minutesIndex, setMinutesIndex] = useState(0);
+  
 
   const handleScroll = (e, mode) => {
     const offsetY = e.nativeEvent.contentOffset.y + 25;
@@ -80,11 +81,20 @@ function TimePicker() {
       
     }
   });
-  const hours = Array.from({ length: 24 }, (v, i) => i);
+  const hours = Array.from({ length: 24 }, (v, i) => i < 10 ? "0"+i : i);
+  console.log(hours)
   const repeatedHours = [...hours, ...hours, ...hours];
 
-  const minutes = Array.from({length: 59}, (v,i) => i + 1);
+  const minutes = Array.from({length: 60}, (v,i) => i < 10 ? "0"+i : i);
   console.log(minutes);
+
+  const hour = hours[hoursIndex];
+  const minute = minutes[minutesIndex];
+
+  useEffect(()=> {
+    console.log(hour);
+    console.log(minute);
+  }, [hour, minute])
 
   // useEffect(() => {
   //   if (hoursScrollViewHeight > 0 && minutesScrollViewHeight > 0) {
