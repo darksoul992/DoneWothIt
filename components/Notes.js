@@ -50,6 +50,7 @@ export default function Notes({ tasks, notes }) {
         extraScrollHeight={80}
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={styles.container}
+        nestedScrollEnabled={true}
       >
         <View style={styles.topbar}>
           <Text style={{ color: "#ebebeb", fontSize: 20 }}>MyHabits</Text>
