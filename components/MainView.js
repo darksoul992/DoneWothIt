@@ -71,14 +71,14 @@ function MainView({ habits, onHabitsSet, toDoToday, onTaskDone, tasksDone }) {
       ]
     );
   };
-  const handleHabitAdd = (habit, weekdays) => {
+  const handleHabitAdd = (habit, weekdays, time) => {
     let maxIdNumber = 0;
     habits.forEach((habit) => {
       if (habit.id > maxIdNumber) maxIdNumber = habit.id;
     });
     onHabitsSet((prev) => [
       ...prev,
-      { id: maxIdNumber + 1, content: habit, weekdays: weekdays },
+      { id: maxIdNumber + 1, content: habit, weekdays: weekdays, time: time},
     ]);
     Toast.show({
       type: "success",

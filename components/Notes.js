@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, Modal } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { styles } from "./styles";
 import Icon from "react-native-vector-icons/MaterialIcons";
@@ -23,24 +23,26 @@ export default function Notes({ tasks, notes }) {
   const translateY = useRef(new Animated.Value(0)).current;
 
   const hideMenu = () => {
-    Animated.parallel([
-      Animated.timing(dropdownOpacity, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-      Animated.timing(translateY, {
-        toValue: -50,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
-      setDropdownSelectVisible(false);
-    });
+    // Animated.parallel([
+    //   Animated.timing(dropdownOpacity, {
+    //     toValue: 0,
+    //     duration: 300,
+    //     useNativeDriver: true,
+    //   }),
+    //   Animated.timing(translateY, {
+    //     toValue: -50,
+    //     duration: 300,
+    //     useNativeDriver: true,
+    //   }),
+    // ]).start(() => {
+    //   setDropdownSelectVisible(false);
+    // });
+    setDropdownSelectVisible(false);
   };
 
   const handleChangeHabitFilter = (id) => {
     setCurrentHabitIDFilter(id);
+    setDropdownSelectVisible(false);
   };
   return (
     <GestureHandlerRootView>
@@ -56,6 +58,12 @@ export default function Notes({ tasks, notes }) {
           <Text style={{ color: "#ebebeb", fontSize: 20 }}>MyHabits</Text>
           <TouchableOpacity>
             <Icon name="login" color="#ebebeb" size={36}></Icon>
+          </TouchableOpacity>
+        </View>
+        <View>
+          <TouchableOpacity onPress={() => setDropdownSelectVisible(prev => !prev)}>
+
+          <Icon name={dropdownSelectVisible ? "filter-alt-off" : "filter-alt"} size={40}></Icon>
           </TouchableOpacity>
         </View>
         <View
@@ -127,7 +135,6 @@ export default function Notes({ tasks, notes }) {
             translateY={translateY}
           </SelectDropdown>
         )}
-        <TimePicker />
       </KeyboardAwareScrollView>
     </GestureHandlerRootView>
   );
@@ -177,12 +184,9 @@ function SelectDropdown({
 }) {
   const selectWindowStyles = StyleSheet.create({
     container: {
-      width: "50%",
+      width: 250,
       maxHeight: 250,
       backgroundColor: "#ebebeb",
-      position: "absolute",
-      top: "50%",
-      left: "25%",
     },
     closeIconContainer: {
       flexDirection: "row",
@@ -195,15 +199,23 @@ function SelectDropdown({
       alignItems: "center",
       backgroundColor: "#b3b3b3ff",
     },
+     modalOverlay: {
+      flex: 1,
+      backgroundColor: "rgba(0,0,0,0.5)",
+      justifyContent: 'center',
+      alignItems: 'center'
+    },
   });
   return (
-    <Animated.ScrollView
-      style={{
-        ...selectWindowStyles.container,
-        dropdownOpacity,
-        transform: [{ translateY }],
-      }}
+    <Modal
+     transparent animationType="slide"
     >
+      <View style={selectWindowStyles.modalOverlay}>
+
+      
+      <View style={selectWindowStyles.container}>
+
+      
       <View style={selectWindowStyles.closeIconContainer}>
         <TouchableOpacity onPress={() => onDropdownHide()}>
           <Icon name="close" size={40}></Icon>
@@ -213,12 +225,14 @@ function SelectDropdown({
         <TouchableOpacity
           key={index}
           style={selectWindowStyles.selectElement}
-          onPress={() => onSelect(option.id)}
+          onPress={() => {onSelect(option.id)}}
         >
           <Text>{option.content}</Text>
         </TouchableOpacity>
       ))}
-    </Animated.ScrollView>
+      </View>
+      </View>
+    </Modal>
   );
 }
 function NoteEntry() {

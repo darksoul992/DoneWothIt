@@ -2,7 +2,8 @@ import Icon from "@react-native-vector-icons/ionicons";
 import { useEffect, useRef, useState } from "react";
 import { StyleSheet, View, Text, ScrollView, Modal, Dimensions, Touchable, TouchableOpacity , OnLayout} from "react-native";
 import { Button } from "react-native-paper";
-function TimePicker() {
+function TimePicker({onTimeSelect, visible}) {
+
   const hoursScrollViewRef = useRef(null);
   const minutesScrollViewRef = useRef(null);
 
@@ -11,6 +12,7 @@ function TimePicker() {
   const [numberElementHeight, setNumberElementHeight] = useState(null)
   const [hoursIndex, setHoursIndex] = useState(0);
   const [minutesIndex, setMinutesIndex] = useState(0);
+
   
 
   const handleScroll = (e, mode) => {
@@ -57,7 +59,6 @@ function TimePicker() {
     scrollContainer: {
       paddingVertical: 50,
       alignItems: 'center',
-      backgroundColor: "yellow"
     } ,
     timeText: {
       fontSize: 60,
@@ -82,11 +83,9 @@ function TimePicker() {
     }
   });
   const hours = Array.from({ length: 24 }, (v, i) => i < 10 ? "0"+i : i);
-  console.log(hours)
   const repeatedHours = [...hours, ...hours, ...hours];
 
   const minutes = Array.from({length: 60}, (v,i) => i < 10 ? "0"+i : i);
-  console.log(minutes);
 
   const hour = hours[hoursIndex];
   const minute = minutes[minutesIndex];
@@ -102,7 +101,9 @@ function TimePicker() {
   //     minutesScrollViewRef.current?.scrollTo({ y: minutesScrollViewHeight / 3, animated: false });
   //   }
   // }, [hoursScrollViewHeight, minutesScrollViewHeight]);
+
   return (
+    visible &&
     <Modal transparent animationType="slide">
       <View style={styles.modalOverlay}>
         <View style={styles.container}>
@@ -145,7 +146,7 @@ function TimePicker() {
               ))}
             </ScrollView>
           </View>
-          <TouchableOpacity style={styles.buttonConfirm}>
+          <TouchableOpacity style={styles.buttonConfirm} onPress={() => {onTimeSelect(hour, minute)}}>
             <Text style={styles.buttonConfirmText}>AKCEPTUJ</Text>
           </TouchableOpacity>
         </View>

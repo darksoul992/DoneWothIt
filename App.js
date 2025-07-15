@@ -135,7 +135,7 @@ export default function App() {
             backgroundColor: "#2f2f2f",
             paddingBottom: 6,
             paddingTop: 6,
-            height: 60,
+            height: 70,
           },
         })}
       >

@@ -5,17 +5,28 @@ import {
   TextInput,
   Button,
   Alert,
+  StyleSheet
 } from "react-native";
 import WeekdayPicker from "./WeekdayPicker";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { useState } from "react";
 import Tile from "./Tile";
 import { styles } from "./styles";
+import TimePicker from "./TimePicker"
 
 function HabitsList({ habits, onHabitRemove, onHabitAdd, onSnackBarVisible }) {
   const [habitsAddFormVisible, setHabitsAddFormVisible] = useState(false);
   const [habitFormInput, setHabitFormInput] = useState("");
   const [selectedWeekdaysIndexes, setSelectedWeekdaysIndexes] = useState([]);
+  const [timerPickerVisible, setTimePickerVisible] = useState(true);
+  const [time, setTime] = useState({hour: 0, minute: 0})
+
+  const handleSelectTime = (hour, minute) => {
+    setTimePickerVisible(false);
+    console.log(hour, minute);
+    setTime({hour: parseInt(hour), minute: parseInt(minute)});
+  }
+
 
   const handleSelectWeekday = (index) => {
     if (selectedWeekdaysIndexes.includes(index)) {
@@ -54,6 +65,14 @@ function HabitsList({ habits, onHabitRemove, onHabitAdd, onSnackBarVisible }) {
               >
                 <Icon size={24} name="date-range"></Icon>
                 <Text>{weekdaysStringBuilder(habit.weekdays)}</Text>
+              </View>
+              <View style={{
+                  flexDirection: "row",
+                  justifyContent: "flex-start",
+                  alignItems: "center",
+                }}>
+                  <Icon size={24} name="access-time"></Icon>
+                <Text>{habit.time ? `${habit.time.hour < 10 ? "0"+String(habit.time.hour): String(habit.time.hour)}:${habit.time.minute < 10 ? "0"+String(habit.time.minute): String(habit.time.minute)}` : "00:00"}</Text>
               </View>
             </View>
 
@@ -105,6 +124,8 @@ function HabitsList({ habits, onHabitRemove, onHabitAdd, onSnackBarVisible }) {
               onWeekdaySelect={handleSelectWeekday}
               selectedWeekdays={selectedWeekdaysIndexes}
             />
+            <TimeInput time={time} onTimeInputPress={() => setTimePickerVisible(true)}/>
+            <TimePicker onTimeSelect={handleSelectTime} visible={timerPickerVisible}/>
             <Button
               onPress={() => {
                 if (!habitFormInput || selectedWeekdaysIndexes.length === 0) {
@@ -120,7 +141,7 @@ function HabitsList({ habits, onHabitRemove, onHabitAdd, onSnackBarVisible }) {
                   );
                   return;
                 }
-                onHabitAdd(habitFormInput, selectedWeekdaysIndexes);
+                onHabitAdd(habitFormInput, selectedWeekdaysIndexes, time);
                 setHabitFormInput("");
                 setSelectedWeekdaysIndexes([]);
                 setHabitsAddFormVisible(false);
@@ -133,6 +154,40 @@ function HabitsList({ habits, onHabitRemove, onHabitAdd, onSnackBarVisible }) {
       </>
     </Tile>
   );
+}
+function TimeInput({time, onTimeInputPress}){
+  console.log(time);
+  const styles = StyleSheet.create({
+    container: {
+      flexDirection: "row",
+      justifyContent: "flex-start",
+      alignItems: "center",
+      marginVertical: 10
+    },
+    input: {
+      backgroundColor: "rgba(255,255,255,0.3)",
+      color: "#4f4f4f",
+      borderRadius: 10,
+      paddingHorizontal: 10,
+      fontSize: 20,
+      marginHorizontal: 5
+    },
+    colon: {
+      fontSize: 20,
+      color: "rgba(255,255,255,0.3)"
+    }
+  })
+  return(
+    <TouchableOpacity onPress={onTimeInputPress}>
+      <View style={styles.container}>
+            <Icon name="access-time" size={48} style={{color: "rgba(255,255,255,0.3)"}}></Icon>
+            <TextInput editable={false} value={String(time.hour)} style={styles.input}></TextInput>
+            <Text style={styles.colon}>:</Text>
+            <TextInput editable={false} value={String(time.minute)} style={styles.input}></TextInput>
+          </View>
+    </TouchableOpacity>
+    
+  )
 }
 
 export default HabitsList;
